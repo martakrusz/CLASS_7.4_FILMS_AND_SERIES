@@ -1,13 +1,16 @@
 from faker import Faker
 import random
+from tabulate import tabulate
 
-print("Biblioteka Filmów:\n")
+fake = Faker()
 
-class Film:
-    def __init__(self, title, publication_year, gentre, number_of_watching):
+#Adding Class about movies
+ 
+class Movie:
+    def __init__(self, title, publication_year, genre, number_of_watching):
         self.title = title
         self.publication_year = publication_year
-        self.gentre = gentre
+        self.genre = genre
         
         self.number_of_watching = number_of_watching
 
@@ -15,70 +18,153 @@ class Film:
        self.number_of_watching += step
 
     def __str__(self):
-        return f'{self.title} ({self.publication_year}) {self.number_of_watching}'    
+        return f'{self.title, self.publication_year, self.genre, self.number_of_watching}'  
+    
+    def __repr__(self):
+        return 'Movie(title: %s, publication_year: %s, genre: %s, number_of_watching: %r)' % (self.title, self.publication_year, self.genre, self.number_of_watching)
 
-class Series(Film):
-    def __init__(self, epizode_number, season_number, *args, **kwargs):
+    def movie_publication_year(self):
+        return f'{self.title} ({self.publication_year})'
+
+    def isSeries(self):
+        hasattr(Movie, 'season_number')
+        return False
+
+    def list_movies(self):
+        return [f'{self.title}, {self.publication_year},{self.genre}, {self.number_of_watching}']
+
+#Adding Class about series
+
+class Series(Movie):
+    def __init__(self, episode_number, season_number, *args, **kwargs):
         super().__init__(*args,**kwargs)
-        self.epizode_number = epizode_number
+        self.episode_number = episode_number
         self.season_number = season_number
 
     def __str__(self):
-        return f'{self.title}  S{self.season_number}E{self.epizode_number} {self.number_of_watching}'     
+        return f'{self.title}  S{self.season_number}E{self.episode_number} {self.number_of_watching}'
 
-def search(movie_title):
-    for name in list_of_movies:
-        if movie_title == name.title:
-            return f'Mamy twój film {name}' 
-        else: 
-            continue   
+    def __repr__(self):
+        return 'Movie(title: %s, publication_year: %s, genre: %s, number_of_watching: %r, episode_number: %r, season_number: %r)' % (self.title, self.publication_year, self.genre, self.number_of_watching, self.episode_number, self.season_number)
+    
+    def play(self, step=1):
+       self.number_of_watching += step
 
-def generate_views():
-    random_views = random.choice(list_of_movies)
-    for _ in range(random.randint(1,100)):
-        random_views.play()
-    return random_views
+    def isSeries(self):
+        hasattr(Movie, 'season_number')
+        return True
 
-list_of_movies = []
-films = []
-series = []
+    def list_series(self):
+        return [f'{self.title}, {self.publication_year},{self.genre}, {self.number_of_watching}, E{self.episode_number}, S{self.season_number}']
+
+# Create a movies and series lists as movies_data
+
+genre_list = ['comedy', 'familly', 'romace', 'horror']
+
+def create_movies():
+    for _ in range(5):
+        movies_list.append(
+                Movie(
+                    title = fake.first_name(), 
+                    publication_year = fake.random_int(min=1980, max=2020),
+                    genre = random.choice(genre_list),
+                    number_of_watching = fake.random_int(0,100),
+                )
+            )
+    return movies_list
+
+def create_series():
+    for _ in range(5):
+        movies_list.append(
+                Series(
+                    title = fake.first_name(), 
+                    publication_year = fake.random_int(min=1980, max=2020),
+                    genre = random.choice(genre_list),
+                    season_number = fake.random_int(0,24),
+                    episode_number = fake.random_int(0,10),
+                    number_of_watching = fake.random_int(0,100),
+                )
+            )
+    return movies_list
+
+def movies_data():
+    create_movies()
+    create_series()
+    return movies_list
+
+# Get movies 
+
+def get_movies(movies_list):
+    film_list = []
+    for item in movies_list:
+        if item.isSeries() == False:
+            film_list.append(item)
+    sorted_movies = sorted(film_list, key=lambda item: item.title)
+    film_list = [i.list_movies() for i in film_list]
+    print("\nList of sorted films")
+    print(tabulate(film_list))
+
+def get_series(movies_list):
+    series_list = []
+    for item in movies_list:
+        if item.isSeries() == True:
+            series_list.append(item)
+    sorted_series = sorted(series_list, key=lambda item: item.title)
+    series_list = [i.list_series() for i in series_list]
+    print("\nList of sorted series")
+    print(tabulate(series_list))
 
 
-film1 = Film(title = "Titanic", publication_year = 1995, gentre = "Drama", number_of_watching = 0)
-film2 = Film(title = "Mask", publication_year = 1990, gentre = "Comedy", number_of_watching = 0)
-film3 = Film(title = "Mask2", publication_year = 1998, gentre = "Comedy", number_of_watching = 0)
-series1 = Series(title = "BBT", publication_year = 2010, gentre = "Comedy", epizode_number = "02", season_number = "03", number_of_watching=0)
-series2 = Series(title = "Friends", publication_year = 1999, gentre = "Comedy", epizode_number = "04", season_number = "05",number_of_watching=0)
-series3 = Series(title = "How i meet your mother", publication_year = 2005, gentre = "Comedy", epizode_number = "20", season_number = "08",number_of_watching=0)
+# Search by title 
 
-list_of_movies.append(film1)
-list_of_movies.append(film2)
-list_of_movies.append(film3)
-list_of_movies.append(series1)
-list_of_movies.append(series2)
-list_of_movies.append(series3)
+def search(movies_list):
+    result = []
+    search_title = input('Enter title you are looking for: ')
+    for item in movies_list:
+        if item.title == search_title:
+            result.append(item)
+
+            if item.isSeries() == False:
+                search_movie = [i.list_movie() for i in result]
+                print(tabulate(search_movie))
+
+            elif item.isSeries() == True:
+                search_movie = [i.list_series() for i in result]
+                print(tabulate(search_movie))
 
 
-films = [i for i in list_of_movies if type(i) == Film]
-get_films = sorted(films, key=lambda Film: Film.title)
-series = [a for a in list_of_movies if type(a) == Series]
-get_series = sorted(series, key=lambda Film: Film.title)
-
-print('Posortowana alfabetycznie lista filmów:')
-print(*get_films)
-print('\nPosortowana alfabetycznie lista seriali:')
-print(*get_series)
-
-print(search("BBT"))
-
-print(generate_views())
-
-final_library = []
-
-def generate_views_10():
+# Generate vievs from play definition 
+def generate_views(movies_list):
     for _ in range(10):
-        next_add = generate_views()
-        final_library.append(next_add)
-    return final_library
+        for x in movies_list:
+            Movie.play(x)
+        return movies_list
 
-print(generate_views_10())
+# Showing top title 
+
+def top_titles(list_movies):
+    top = int(input("How many top movie do you want to see?: "))
+    for item in list_movies:
+        watches = (sorted(list_movies, key=lambda item: item.number_of_watching))
+    top_watches = watches[0:top]
+    top_list = [t.list_movies() for t in top_watches]
+    print('Your top titles are: ')
+    print(tabulate(top_list))
+
+if __name__ == "__main__":
+    movies_list=[]
+
+    movies_data()
+    #print(movies_list)
+
+    generate_views(movies_list)
+
+    print("\nMovies and Series library\n")
+
+    get_movies(movies_list)
+
+    get_series(movies_list)
+
+    top_titles(movies_list)
+
+    search(movies_list)

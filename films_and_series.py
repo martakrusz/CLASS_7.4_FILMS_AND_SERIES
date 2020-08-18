@@ -96,9 +96,9 @@ def search(find_title):
 
 def generate_views(movies_list):
     for _ in range(10):
-        for x in library:
+        for x in movies_list:
             Movie.play(x)
-        return library
+        return movies_list
 
 # Returinng top title 
 
@@ -129,6 +129,11 @@ if __name__ == "__main__":
 
     print(search("Carlos"))
 
+    print("\nGenerate views \n")
+
+    print(generate_views(library))
+
     print("\nTop 3\n" )
 
     print(top_tittle(3))
+
